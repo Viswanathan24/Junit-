@@ -1,0 +1,79 @@
+package com.cisco.opl.repository;
+
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import com.cisco.opl.response.Address;
+import com.cisco.opl.response.PartyAccts;
+
+
+@RunWith(MockitoJUnitRunner.class)
+public class OracleRepositoryTest {
+	
+	@InjectMocks
+	OracleRepository oracleRepo;
+	
+	
+	Map<String, String> productFamilyMap=new HashMap<String, String>();
+	
+	@Mock
+	JdbcTemplate jdbcTemplate;
+	
+	@Mock
+	NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+	
+	@Mock
+	MapSqlParameterSource namedParameters;
+	
+	@Mock
+	ResultSet resultset;
+  
+  @Test
+	public void getProductFamily() {
+	
+	List<String> itmNms = new ArrayList<String>();
+	itmNms.add("A-SPK-NAMED-USER");
+	
+	productFamilyMap.put("ITEMNAME", "A-SPK-NAMED-USER");
+	productFamilyMap.put("PRODUCTFAMILY", "SPKCLD");
+	
+	
+	Mockito.doAnswer(invocationOnMock ->{
+		ResultSet resultSet = Mockito.mock(ResultSet.class);
+	    Mockito.when(resultSet.next()).thenReturn(true).thenReturn(false);
+	    Mockito.when(resultSet.getString("ITEMNAME")).thenReturn(productFamilyMap.get("ITEMNAME"));
+	    Mockito.when(resultSet.getString("PRODUCTFAMILY")).thenReturn(productFamilyMap.get("PRODUCTFAMILY"));
+	    
+	    ResultSetExtractor<Map<String, String>> resultSetExtractor = 
+	            invocationOnMock.getArgument(2);
+	        return resultSetExtractor.extractData(resultSet);
+	}).when(namedParameterJdbcTemplate).query(
+		    Mockito.anyString(), 
+		    Mockito.any(MapSqlParameterSource.class), 
+		    Mockito.any(ResultSetExtractor.class)
+		);
+	System.out.println("Map Value"+productFamilyMap);
+	productFamilyMap=oracleRepo.getProductFamily(itmNms);
+
+}
